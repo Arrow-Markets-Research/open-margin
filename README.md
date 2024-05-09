@@ -6,14 +6,14 @@
 
 # Open Margin
 
-Arrow Markets repository to calculate margin requirements for crypto option portfolios.
+Arrow Markets open source repository to calculate margin requirements for risky asset portfolios including crypto options portfolios.
 
 ## Overview
 
 This repository includes a simplified version of the proprietary Arrow Markets margin calculator. <br />
 It uses VAR/CVAR methodology to compute the necessary margin required for a portfolio of BTC or ETH options. <br />
 Negative values refer to the cash margin needed for a given portfolio, while positive margin values count as credits. <br />
-Please refer to the white paper: "Automated Margin Systems in Practice" for further details.
+For further details, please refer to the white paper ["Automated Margin Systems in Practice"](https://drive.google.com/file/d/12iX75pEvrZvwky-O8z6F1PeO65duMdyJ/view?usp=drive_link)
 
 ## Installation
 
