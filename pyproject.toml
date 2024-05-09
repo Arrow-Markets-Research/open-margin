@@ -1,0 +1,18 @@
+[project]
+name = "openmargin"
+version = "0.0.1"
+authors = [
+  { name="Subharmonic Research", email="ata@subharmonic.tech" },
+]
+description = "Subharmonic Research repository for calculation margin requirements for crypto option portfolios."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/pypa/open-margin"
+Issues = "https://github.com/pypa/open-margin/issues"
