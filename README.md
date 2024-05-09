@@ -6,7 +6,7 @@
 
 # Open Margin
 
-Arrow Markets repository for calculation margin requirements for crypto option portfolios.
+Arrow Markets repository to calculate margin requirements for crypto option portfolios.
 
 ## Overview
 
