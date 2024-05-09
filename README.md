@@ -1,4 +1,4 @@
-<p align="center"><img width=20% src="https://github.com/Arrow-Markets-Research/pricing-models/blob/margin-main/subharmonic.png"></p>
+<p align="center"><img width=20% src="https://github.com/Arrow-Markets-Research/openmargin/arrow-markets.png"></p>
 
 ![Python](https://img.shields.io/badge/python-v3.8+-green.svg)
 ![Version](https://img.shields.io/badge/version-0.0.1-red.svg)
@@ -6,23 +6,17 @@
 
 # Open Margin
 
-Subharmonic Research repository for calculation margin requirements for crypto option portfolios.
+Arrow Markets repository for calculation margin requirements for crypto option portfolios.
 
 ## Overview
 
-This repository includes a simplified version of the proprietary Subharmonic Technologies margin calculator. <br />
+This repository includes a simplified version of the proprietary Arrow Markets margin calculator. <br />
 It uses VAR/CVAR methodology to compute the necessary margin required for a portfolio of BTC or ETH options. <br />
 Negative values refer to the cash margin needed for a given portfolio, while positive margin values count as credits. <br />
 Please refer to the white paper: "Automated Margin Systems in Practice" for further details.
 
 ## Installation
-```bash
-git clone https://github.com/Arrow-Markets-Research/openmargin
-cd openmargin
-python3 -m venv venv
-venv/Scripts/activate
-```
-OR
+
 ```bash
 pip install openmargin
 ```
@@ -62,7 +56,7 @@ RiskCalc has four pillars that can be modified to generate the required margin.
 Open Margin uses the current options data for BTC and ETH from Deribit. <br />
 To provide a different dataset, please provide a pandas dataframe containing options data similar to the one shown below: 
 
-<p align="left"><img width=100% src="https://github.com/Arrow-Markets-Research/pricing-models/blob/margin-main/options_data.png"></p>
+<p align="left"><img width=100% src="https://github.com/Arrow-Markets-Research/openmargin/options_data.png"></p>
 
 ```python
 risk_calculator = RiskCalc(ticker, portfolio, options_data)
@@ -126,4 +120,4 @@ The paths can be generated with:
 sample_paths = price_paths.generate_paths()
 ```
 
-Further customization examples can be found under <font color="47efe9"> example.py. </font>
+Further customization examples can be found under example.py.
