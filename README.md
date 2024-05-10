@@ -1,4 +1,4 @@
-<p align="center"><img width=20% src="https://github.com/Arrow-Markets-Research/openmargin/blob/main/arrow-markets.png"></p>
+<p align="center"><img width=20% src="https://github.com/Arrow-Markets-Research/openmargin/raw/main/arrow-markets.png"></p>
 
 ![Python](https://img.shields.io/badge/python-v3.8+-green.svg)
 ![Version](https://img.shields.io/badge/version-0.0.1-red.svg)
@@ -56,7 +56,7 @@ RiskCalc has four pillars that can be modified to generate the required margin.
 Open Margin uses the current options data for BTC and ETH from Deribit. <br />
 To provide a different dataset, please provide a pandas dataframe containing options data similar to the one shown below: 
 
-<p align="left"><img width=100% src="https://github.com/Arrow-Markets-Research/openmargin/blob/main/options_data.png"></p>
+<p align="left"><img src="https://github.com/Arrow-Markets-Research/openmargin/raw/main/options_data.png"></p>
 
 ```python
 risk_calculator = RiskCalc(ticker, portfolio, options_data)
