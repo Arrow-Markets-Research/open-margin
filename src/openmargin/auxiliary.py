@@ -67,22 +67,16 @@ def get_underlier_price(ticker: str):
         f"https://api.binance.com/api/v3/ticker/price?symbol={binance_symbols[ticker]}"
     )
     response_json = response.json()
-    # If Binance tells us we have been making too many requests, use Cryptowatch
-    if 'code' in response_json and response_json['code'] == -1003:
-        # Use CryptoWatch API to get latest price
+    if 'code' in response_json and response_json['code'] == 0:
+        # Use Binance.US
         response = requests.get(
-            f"https://api.cryptowat.ch/markets/binance/{binance_symbols[ticker]}/price"
+            f"https://api.binance.us/api/v3/ticker/price?symbol={binance_symbols[ticker]}"
         )
 
-        try:
-            spot_price = float(response.json()['result']['price'])
-        except:
-            raise Exception("Could not retrieve underlying spot price from Cryptowatch.")
-    else:
-        try:
-            spot_price = float(response.json()['price'])
-        except:
-            raise Exception("Could not retrieve underlying spot price from Binance.")
+    try:
+        spot_price = float(response.json()['price'])
+    except:
+        raise Exception("Could not retrieve underlying spot price from Binance.")
 
     return spot_price
 
