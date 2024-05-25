@@ -126,12 +126,12 @@ From the venv, run
 ```bash
 pip install -r requirements.txt
 ```
-Create a test file `om-test.py`
+Create a test file in the `src/openmargin` directory called `om-test.py`:
 
 ```python
 import datetime
 import pandas as pd
-from risk import RiskCalc
+from openmargin.risk import RiskCalc
 
 ticker = "eth"
 
@@ -148,8 +148,8 @@ m = risk_calculator.get_margin()
 print("portfolio:\n", portfolio, "\nspot:", float(risk_calculator.portfolio.spot), "\ninitial margin:", m[0])
 
 ```
-Now, to compute the intitial margin for the chosen portfolio, run
+Now, to compute the intitial margin for the chosen portfolio, switch to the `src` directory and run
 
 ```bash
-python3 om-test.py
+python3 -m openmargin.om-test
 ```
