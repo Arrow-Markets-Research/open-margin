@@ -19,11 +19,6 @@ Negative values refer to the cash margin needed for a given portfolio, while pos
 pip install openmargin
 ```
 
-## Dependencies
-
-```bash
-pip install -r requirements.txt
-```
 ## Usage
 
 Open Margin calculates the risk of an options portfolio through RiskCalc. <br />
@@ -119,3 +114,47 @@ sample_paths = price_paths.generate_paths()
 ```
 
 Further customization examples can be found under example.py.
+
+## Alternative Use: Clone Repo Directly
+
+```bash
+git clone https://github.com/Arrow-Markets-Research/openmargin
+```
+### venv
+
+Initialize a virtual environment (Windows)
+```bash
+python3 -m venv venv
+venv/Scripts/activate.bat
+```
+### Dependencies
+
+From the venv, run
+```bash
+pip install -r requirements.txt
+```
+Create a test file `openmargintest.py`
+
+```python
+import datetime
+import pandas as pd
+from openmargin.risk import RiskCalc
+
+ticker = "eth"
+
+expiration = datetime.datetime.strptime('2024-09-27 08:00:00', "%Y-%m-%d %H:%M:%S")
+strike = 7000.0
+kind = "C"
+position = -1
+portfolio = {'expiration': expiration, 'strike': strike, 'kind': kind, 'position': position}
+portfolio = pd.DataFrame([portfolio],columns = ["expiration", "strike", "kind", "position"])
+
+risk_calculator = RiskCalc(ticker, portfolio)
+risk_calculator.get_margin()
+
+```
+Now run
+
+```bash
+python3 openmargintest.py
+```
