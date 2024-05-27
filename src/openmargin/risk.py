@@ -27,7 +27,7 @@ class PricePathGenerator:
                  ticker: str,
                  risk_params: RiskConfig,
                  spot = None,
-                 number_of_paths = 1_000,
+                 number_of_paths = 10_000,
                  historical_prices = None):
 
         self.ticker = ticker
@@ -154,10 +154,11 @@ class RiskCalc:
                 print("Option positions need to be a vector of floats, e.g 1.0")
                 break
         
+        spot = get_underlier_price(ticker)
+
         if self.input_check:
             if self.options_data is None:
                 self.utcnow = datetime.datetime.now(tz=datetime.timezone.utc)
-                spot = get_underlier_price(ticker)
                 (expiration_datetimes, yearly_times_to_expiration, strikes, log_moneynesses, contract_types, spot_prices, yearly_mark_implied_volatilities, mark_prices, prices) = deribit_option_data(ticker, self.utcnow)
                 options_data = pd.DataFrame([spot_prices, expiration_datetimes, yearly_times_to_expiration, strikes, log_moneynesses, contract_types, yearly_mark_implied_volatilities, mark_prices, prices]).T
                 options_data.columns = ['spot', 'expiration','tte','strike', 'log_money', 'kind','mark_iv','mark_price', 'price']

@@ -1,7 +1,7 @@
 <p align="center"><img width=20% src="https://github.com/Arrow-Markets-Research/openmargin/raw/main/arrow-markets.png"></p>
 
 ![Python](https://img.shields.io/badge/python-v3.8+-green.svg)
-![Version](https://img.shields.io/badge/version-0.0.4-red.svg)
+![Version](https://img.shields.io/badge/version-0.0.5-red.svg)
 ![License](https://img.shields.io/badge/license-GNU-blue.svg)
 
 # Open Margin
@@ -20,12 +20,12 @@ pip install openmargin
 
 ## Usage
 
-Open Margin calculates the risk of an options portfolio through RiskCalc. Once a compatible ticker and an options portfolio are provided portfolio margin can be computed with default parameters via
+Open Margin calculates the risk of an options portfolio through RiskCalc. 
+A compatible ticker and an options portfolio are the minimum inputs needed to generate the corresponding margin values.
 
 ```python
 import datetime
 import pandas as pd
-from openmargin.risk import RiskCalc
 
 ticker = "eth"
 
@@ -35,20 +35,42 @@ kind = "C"
 position = -1
 portfolio = {'expiration': expiration, 'strike': strike, 'kind': kind, 'position': position}
 portfolio = pd.DataFrame([portfolio],columns = ["expiration", "strike", "kind", "position"])
-
-risk_calculator = RiskCalc(ticker, portfolio)
-risk_calculator.get_margin()
-
 ```
 
-RiskCalc has four pillars that can be modified to generate the required margin.
+Once the ticker and the options data are ready, margin can be computed with default parameters:
+
+```python
+from openmargin.risk import RiskCalc
+risk_calculator = RiskCalc(ticker, portfolio)
+risk_calculator.get_margin()
+```
+
+RiskCalc has four pillars that can be modified to generate the required margin. 
+All of the examples below assume that minimum inputs and corresponding package imports are complete.
 
 ### Options Data
 Open Margin uses the current options data for BTC and ETH from Deribit. To provide a different dataset, please provide a pandas dataframe containing options data similar to the one shown below: 
 
 <p align="left"><img src="https://github.com/Arrow-Markets-Research/openmargin/raw/main/options_data.png"></p>
 
+To download and save the most recent options data:
+
 ```python
+from openmargin.auxiliary import deribit_option_data
+
+utcnow = datetime.datetime.now(tz=datetime.timezone.utc)
+(expiration_datetimes, yearly_times_to_expiration, strikes, log_moneynesses, contract_types, spot_prices, yearly_mark_implied_volatilities, mark_prices, prices) = deribit_option_data(ticker, utcnow)
+options_data = pd.DataFrame([spot_prices, expiration_datetimes, yearly_times_to_expiration, strikes, log_moneynesses, contract_types, yearly_mark_implied_volatilities, mark_prices, prices]).T
+options_data.columns = ['spot', 'expiration','tte','strike', 'log_money', 'kind','mark_iv','mark_price', 'price']
+options_data = options_data.reset_index(drop=True)
+options_data.to_csv(f'options_data.csv', index = False)
+```
+
+Providing the options data as a dataframe to Open Margin substantially reduces margin computation times. 
+To load a cahced option dataset and get the corresponding margin values: 
+
+```python
+options_data = pd.read_csv('options_data.csv', parse_dates=['expiration'])
 risk_calculator = RiskCalc(ticker, portfolio, options_data)
 risk_calculator.get_margin()
 ```
