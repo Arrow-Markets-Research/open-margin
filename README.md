@@ -1,7 +1,7 @@
 <p align="center"><img width=20% src="https://github.com/Arrow-Markets-Research/openmargin/raw/main/arrow-markets.png"></p>
 
 ![Python](https://img.shields.io/badge/python-v3.8+-green.svg)
-![Version](https://img.shields.io/badge/version-0.0.6-red.svg)
+![Version](https://img.shields.io/badge/version-0.0.7-red.svg)
 ![License](https://img.shields.io/badge/license-GNU-blue.svg)
 
 # Open Margin

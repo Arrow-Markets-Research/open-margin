@@ -14,11 +14,11 @@ class RiskConfig:
                  steps = 24,
                  **kwargs):
         
-        self.r = r # continuously compounded interest rate
-        self.sampling_frequency = sampling_frequency # empirical sample generation & mjd option prices
+        self.r = r 
+        self.sampling_frequency = sampling_frequency
         self.steps = steps
-        self.trading_horizon = sampling_frequency * steps # empirical sample generation, option pricing
-        self.T = self.trading_horizon / hours_per_year # Trading Horizon
+        self.trading_horizon = sampling_frequency * steps
+        self.T = self.trading_horizon / hours_per_year
         self.dt = self.sampling_frequency / hours_per_year
         self.kwargs = kwargs
 
@@ -41,21 +41,19 @@ class PricePathGenerator:
         self.number_of_paths = number_of_paths
         self.historical_prices = historical_prices
 
-    def generate_paths(self):
-        self.sample_paths = pd.DataFrame(index=range(self.risk_params.steps),columns=range(self.number_of_paths))
-        
+    def generate_paths(self):        
         if self.historical_prices is None:
             self.historical_prices = get_historical_prices(Ticker.cast(self.ticker), self.risk_params.sampling_frequency)
 
         historical_returns = np.diff(np.log(self.historical_prices))
 
+        self.horizon_spots = []
         for i in range(self.number_of_paths):
             bootstrap = pd.DataFrame(historical_returns).sample(n = self.risk_params.steps, replace = True)[0].values.tolist()
-            cum_ret = cumsum_list(bootstrap)
-            path = np.exp(np.array(cum_ret)) * self.spot
-            self.sample_paths.iloc[:,i] = path
-
-        return self.sample_paths
+            horizon_spot = np.exp(sum(bootstrap)) * self.spot
+            self.horizon_spots.append(horizon_spot)
+            
+        return self.horizon_spots
 
 class VAR:
     def __init__(self,
@@ -82,10 +80,10 @@ class RiskCalc:
         
         self.ticker = ticker
         self.portfolio = portfolio
+        self.options_data = options_data
         self.risk_params = risk_params
         self.risk_model = risk_model
         self.price_paths = price_paths
-        self.options_data = options_data
 
         self.input_check = True
         allowed_tickers = ['btc', 'eth']
@@ -215,8 +213,7 @@ class RiskCalc:
                 # VAR - CVAR
                 ###################################################################
                 if type(self.risk_model.margin_method) == VAR:
-                    sample_paths = self.price_paths.generate_paths()
-                    row, col = sample_paths.shape
+                    horizon_spots = self.price_paths.generate_paths()
                     option_VaR = []
 
                     for idx in self.portfolio.index.to_list():
@@ -226,36 +223,27 @@ class RiskCalc:
                         kind = option['kind']
                         tte = option['tte']
                         
-                        path_option_pnl = []
+                        option_pnl = []
 
-                        for i in range(0, col): 
-                            option_pnl = []
+                        for i in range(len(horizon_spots)): 
+                            _spot = horizon_spots[i]
+                            tte = max((option['tte'] - self.risk_params.T), 0)
 
-                            _spot = self.price_paths.spot
-
-                            for j in range(self.risk_params.sampling_frequency - 1, self.risk_params.trading_horizon, self.risk_params.sampling_frequency):
-                                _spot = sample_paths.iloc[(j + 1) // self.risk_params.sampling_frequency - 1, i]
-
-                                tte = max(option['tte'] - ((j + 1) * self.risk_params.sampling_frequency / hours_per_year), 0)
-
-                                if tte > 0:
-                                    if kind == 'C':
-                                            bsm_vol = option.mark_iv
-                                            new_option_price = bs_call(_spot, strike, tte, self.risk_params.r, bsm_vol)
-                                    elif kind == 'P':
-                                            bsm_vol = option.mark_iv
-                                            new_option_price = bs_put(_spot, strike, tte, self.risk_params.r, bsm_vol)
-                                    else:
-                                        new_option_price = 0
+                            if tte > 0:
+                                if kind == 'C':
+                                        bsm_vol = option.mark_iv
+                                        new_option_price = bs_call(_spot, strike, tte, self.risk_params.r, bsm_vol)
+                                elif kind == 'P':
+                                        bsm_vol = option.mark_iv
+                                        new_option_price = bs_put(_spot, strike, tte, self.risk_params.r, bsm_vol)
                                 else:
                                     new_option_price = 0
+                            else:
+                                new_option_price = 0
 
-                                _option_pnl = new_option_price - option_price
-                                option_pnl.append(_option_pnl)
-                                    
-                            path_option_pnl.append(option_pnl)
+                            option_pnl.append(new_option_price - option_price)
 
-                        option_VaR.append(path_option_pnl)
+                        option_VaR.append(option_pnl)
                     
                     self.portfolio['option_VaR'] = option_VaR
 
@@ -263,7 +251,6 @@ class RiskCalc:
                     # VAR-CVAR Calculation
                     #########################################################
                     portfolio_pnls = []
-                    portfolio_pnl_paths = []
 
                     for i in range(self.price_paths.number_of_paths):
                         option_pnls = []
@@ -271,8 +258,7 @@ class RiskCalc:
                             _nom_VaR = np.array(self.portfolio.loc[idx, 'option_VaR'][i]) * self.portfolio.loc[idx, 'position']
                             option_pnls.append(_nom_VaR)
 
-                        portfolio_pnls.append(min(sum(option_pnls)))
-                        portfolio_pnl_paths.append(sum(option_pnls))
+                        portfolio_pnls.append(sum(option_pnls))
 
                     sorted_portfolio_pnls = np.sort(np.round(portfolio_pnls, 2)).tolist()
                     mc_VaR = np.percentile(sorted_portfolio_pnls, self.risk_model.margin_method.var_threshold * 100, method = "closest_observation")
