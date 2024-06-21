@@ -25,7 +25,7 @@ class RiskConfig:
 class PricePathGenerator:
     def __init__(self, 
                  ticker: str,
-                 risk_params: RiskConfig,
+                 risk_params = RiskConfig(),
                  spot = None,
                  number_of_paths = 10_000,
                  historical_prices = None):
@@ -75,17 +75,17 @@ class RiskCalc:
     def __init__(self,
                  ticker: str,
                  portfolio: pd.DataFrame, # Portfolio
-                 options_data = None, # OptionData
                  risk_params = None, # RiskConfig
                  risk_model = None, # RiskModel
-                 price_paths = None): # PricePathGenerator
+                 price_paths = None, # PricePathGenerator
+                 options_data = None): # OptionData
         
         self.ticker = ticker
         self.portfolio = portfolio
-        self.options_data = options_data
         self.risk_params = risk_params
         self.risk_model = risk_model
         self.price_paths = price_paths
+        self.options_data = options_data
 
         self.input_check = True
         allowed_tickers = ['btc', 'eth']
@@ -153,18 +153,33 @@ class RiskCalc:
                 self.input_check = False
                 print("Option positions need to be a vector of floats, e.g 1.0")
                 break
-        
-        spot = get_underlier_price(ticker)
 
         if self.input_check:
+            if self.risk_params is None:
+                self.risk_params = RiskConfig()
+            else:
+                self.risk_params = risk_params
+
+            if self.risk_model is None:
+                self.risk_model = RiskModel(VAR())
+            else:
+                self.risk_model = risk_model
+
+            if self.price_paths is None:
+                self.spot = get_underlier_price(ticker)
+                self.price_paths = PricePathGenerator(ticker = self.ticker, risk_params = self.risk_params, spot = self.spot)
+            else:
+                self.spot = price_paths.spot
+                self.price_paths = price_paths
+                 
             if self.options_data is None:
                 self.utcnow = datetime.datetime.now(tz=datetime.timezone.utc)
                 (expiration_datetimes, yearly_times_to_expiration, strikes, log_moneynesses, contract_types, spot_prices, yearly_mark_implied_volatilities, mark_prices, prices) = deribit_option_data(ticker, self.utcnow)
                 options_data = pd.DataFrame([spot_prices, expiration_datetimes, yearly_times_to_expiration, strikes, log_moneynesses, contract_types, yearly_mark_implied_volatilities, mark_prices, prices]).T
                 options_data.columns = ['spot', 'expiration','tte','strike', 'log_money', 'kind','mark_iv','mark_price', 'price']
                 options_data = options_data.reset_index(drop=True)
-                options_data['spot'] = spot
-                options_data['log_money'] = np.log(options_data['strike'].astype(float) / spot)
+                options_data['spot'] = self.spot
+                options_data['log_money'] = np.log(options_data['strike'].astype(float) / self.spot)
                 self.options_data = options_data
 
             self.options_data = self.options_data[self.options_data.expiration.isin(portfolio.expiration.unique())].reset_index(drop=True)
@@ -179,22 +194,6 @@ class RiskCalc:
                 self.portfolio = self.options_data.loc[portfolio_indices]
                 self.portfolio['position'] = positions
         
-        if self.input_check:
-            if self.risk_params is None:
-                self.risk_params = RiskConfig()
-            else:
-                self.risk_params = risk_params
-
-            if self.risk_model is None:
-                self.risk_model = RiskModel(VAR())
-            else:
-                self.risk_model = risk_model
-
-            if self.price_paths is None:
-                self.price_paths = PricePathGenerator(ticker = self.ticker, risk_params = self.risk_params, spot = spot)
-            else:
-                self.price_paths = price_paths
-
     def index_finder(self, portfolio):
         if self.input_check == True:
             portfolio_indices = []

@@ -1,7 +1,7 @@
 <p align="center"><img width=20% src="https://github.com/Arrow-Markets-Research/openmargin/raw/main/arrow-markets.png"></p>
 
 ![Python](https://img.shields.io/badge/python-v3.8+-green.svg)
-![Version](https://img.shields.io/badge/version-0.0.5-red.svg)
+![Version](https://img.shields.io/badge/version-0.0.6-red.svg)
 ![License](https://img.shields.io/badge/license-GNU-blue.svg)
 
 # Open Margin
@@ -22,6 +22,7 @@ pip install openmargin
 
 Open Margin calculates the risk of an options portfolio through RiskCalc. 
 A compatible ticker and an options portfolio are the minimum inputs needed to generate the corresponding margin values.
+Providing the options data as a dataframe to Open Margin substantially reduces margin computation time. 
 
 ```python
 import datetime
@@ -37,7 +38,7 @@ portfolio = {'expiration': expiration, 'strike': strike, 'kind': kind, 'position
 portfolio = pd.DataFrame([portfolio],columns = ["expiration", "strike", "kind", "position"])
 ```
 
-Once the ticker and the options data are ready, margin can be computed with default parameters:
+Once the ticker and the portfolio data are ready, margin can be computed with default parameters:
 
 ```python
 from openmargin.risk import RiskCalc
@@ -66,7 +67,6 @@ options_data = options_data.reset_index(drop=True)
 options_data.to_csv(f'options_data.csv', index = False)
 ```
 
-Providing the options data as a dataframe to Open Margin substantially reduces margin computation times. 
 To load a cahced option dataset and get the corresponding margin values: 
 
 ```python
@@ -76,7 +76,8 @@ risk_calculator.get_margin()
 ```
 
 ### Risk Configuration
-Three main risk factors are configured under RiskConfig. Interest rate, sampling frequency and steps are the key parameters currently allowed for user customization. Sampling frequency multiplied by steps determine the trading horizon that will be used to calculate margin values.
+Three main risk factors are configured under RiskConfig. Interest rate, sampling frequency and steps are the key parameters currently allowed for user customization. 
+Sampling frequency multiplied by steps determine the trading horizon that will be used to calculate margin values.
 
 ```python
 from openmargin.risk import RiskConfig, RiskCalc
